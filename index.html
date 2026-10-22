@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snake X — Enhanced Snake Game</title>
+  <meta name="description" content="구글 스네이크 게임의 강화 버전 — 다양한 움직임, 적 추격 시스템, 특수 아이템 포함" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="bg-glow"></div>
+
+  <!-- Start Screen -->
+  <div id="start-screen" class="screen active">
+    <div class="logo-area">
+      <div class="logo-snake">
+        <span class="s1">S</span><span class="s2">N</span><span class="s3">A</span><span class="s4">K</span><span class="s5">E</span>
+        <span class="sx"> X</span>
+      </div>
+      <p class="tagline">더 빠르게 · 더 위험하게 · 더 스마트하게</p>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-icon">⚡</div>
+        <div class="info-label">대시</div>
+        <div class="info-desc">SPACE로 순간가속</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🌀</div>
+        <div class="info-label">벽 통과</div>
+        <div class="info-desc">파란 아이템 먹기</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">👾</div>
+        <div class="info-label">적 추격</div>
+        <div class="info-desc">빨간 적이 쫓아옴</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🔮</div>
+        <div class="info-label">텔레포트</div>
+        <div class="info-desc">보라 아이템 먹기</div>
+      </div>
+    </div>
+
+    <div class="difficulty-section">
+      <p class="section-label">난이도 선택</p>
+      <div class="diff-buttons">
+        <button class="diff-btn" id="diff-easy" onclick="selectDifficulty('easy')">쉬움</button>
+        <button class="diff-btn active" id="diff-normal" onclick="selectDifficulty('normal')">보통</button>
+        <button class="diff-btn" id="diff-hard" onclick="selectDifficulty('hard')">어려움</button>
+      </div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startGame()">
+      <span>게임 시작</span>
+      <div class="btn-glow"></div>
+    </button>
+
+    <p class="controls-hint">← → ↑ ↓ 이동 &nbsp;|&nbsp; SPACE 대시 &nbsp;|&nbsp; ESC 일시정지</p>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen">
+    <div class="hud">
+      <div class="hud-left">
+        <div class="hud-item">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-value" id="score-display">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">HIGH SCORE</span>
+          <span class="hud-value" id="highscore-display">0</span>
+        </div>
+      </div>
+      <div class="hud-center">
+        <div class="game-title-small">SNAKE X</div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-item">
+          <span class="hud-label">LEVEL</span>
+          <span class="hud-value" id="level-display">1</span>
+        </div>
+        <div class="status-badges">
+          <div class="badge" id="badge-ghost" title="벽 통과 활성">👻</div>
+          <div class="badge" id="badge-slow" title="슬로우 활성">🐌</div>
+          <div class="badge" id="badge-dash" title="대시 쿨다운">⚡</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="game-canvas"></canvas>
+      <div id="pause-overlay" class="pause-overlay hidden">
+        <div class="pause-box">
+          <div class="pause-title">⏸ 일시정지</div>
+          <button class="pause-resume-btn" onclick="resumeGame()">계속하기</button>
+          <button class="pause-menu-btn" onclick="goToMenu()">메뉴로</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ability-bar">
+      <div class="ability-item">
+        <div class="ability-icon" id="ability-dash">⚡</div>
+        <div class="ability-name">대시</div>
+        <div class="cooldown-ring" id="cd-dash"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="gameover-screen" class="screen">
+    <div class="gameover-box">
+      <div class="gameover-title" id="gameover-title">GAME OVER</div>
+      <div class="gameover-cause" id="gameover-cause"></div>
+      <div class="gameover-stats">
+        <div class="stat-row">
+          <span class="stat-label">점수</span>
+          <span class="stat-value" id="final-score">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">최고 점수</span>
+          <span class="stat-value highlight" id="final-highscore">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">레벨</span>
+          <span class="stat-value" id="final-level">1</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">먹은 음식</span>
+          <span class="stat-value" id="final-food">0</span>
+        </div>
+      </div>
+      <div class="gameover-buttons">
+        <button class="restart-btn" onclick="startGame()">다시 하기</button>
+        <button class="menu-btn" onclick="goToMenu()">메뉴로</button>
+      </div>
+      <div id="new-record-badge" class="new-record hidden">🏆 신기록!</div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
